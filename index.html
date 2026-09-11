@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fravær – Fritidsgården</title>
+<meta name="description" content="Registrer ferie, egenmelding, sykemelding, permisjon og avspasering.">
+<meta name="theme-color" content="#f4f6f9">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Fravær">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="robots" content="noindex, nofollow">
+<style>
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:#f4f6f9; -webkit-tap-highlight-color:transparent; }
+</style>
+</head>
+<body>
+<div id="fraevaerApp">
+<style>
+  #fraevaerApp {
+    --bg: #f4f6f9; --surface: #fff; --border: #e2e6ec; --text: #1c2430; --muted: #6b7684;
+    --primary: #2f6bff; --primary-dark: #2456d1; --primary-soft: #e8efff;
+    --danger: #d64545; --danger-soft: #fdeaea; --success: #1f9d5a; --success-soft: #e4f6ec;
+    --warning: #d98a0b; --warning-soft: #fff4de; --radius: 12px;
+    --shadow: 0 1px 2px rgba(16,24,40,.05), 0 4px 16px rgba(16,24,40,.06);
+    --ferie:#2f6bff; --egenmelding:#d98a0b; --sykemelding:#d64545; --permisjon:#8b5cf6;
+    --avspasering:#0ea5a5; --hjemmekontor:#64748b; --annet:#94a3b8;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+    color: var(--text); line-height: 1.5; font-size: 15px; max-width: 1180px; margin: 0 auto; padding: 8px 0 48px;
+    text-align: left;
+  }
+  #fraevaerApp * { box-sizing: border-box; }
+  #fraevaerApp h1, #fraevaerApp h2, #fraevaerApp h3, #fraevaerApp p { margin: 0; letter-spacing: 0; text-transform: none; }
+  #fraevaerApp .fr-header { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
+  #fraevaerApp .fr-header h1 { font-size:1.5rem; font-weight:700; }
+  #fraevaerApp .fr-header h1 span { color:var(--muted); font-weight:400; font-size:.95rem; display:block; }
+  #fraevaerApp .fr-user { display:flex; align-items:center; gap:10px; font-size:.9rem; }
+  #fraevaerApp .fr-role { font-size:.78rem; padding:3px 8px; border-radius:999px; background:var(--primary-soft); color:var(--primary-dark); font-weight:600; }
+  #fraevaerApp .fr-tabs { display:flex; gap:4px; border-bottom:1px solid var(--border); margin-bottom:20px; overflow-x:auto; }
+  #fraevaerApp .fr-tab { padding:10px 16px; border:0; background:none; font:inherit; font-weight:600; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; white-space:nowrap; border-radius:0; }
+  #fraevaerApp .fr-tab.active { color:var(--primary); border-bottom-color:var(--primary); }
+  #fraevaerApp .fr-tab .badge { display:inline-block; min-width:18px; padding:0 6px; margin-left:6px; border-radius:999px; background:var(--danger); color:#fff; font-size:.72rem; line-height:18px; text-align:center; }
+  #fraevaerApp .fr-panel { display:none; } #fraevaerApp .fr-panel.active { display:block; }
+  #fraevaerApp [hidden] { display:none !important; }
+  #fraevaerApp .fr-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
+  #fraevaerApp .fr-two { display:grid; grid-template-columns:380px 1fr; gap:20px; align-items:start; }
+  @media (max-width:900px){ #fraevaerApp .fr-two{grid-template-columns:1fr} #fraevaerApp .fr-grid{grid-template-columns:1fr 1fr} }
+  @media (max-width:520px){ #fraevaerApp .fr-grid{grid-template-columns:1fr} }
+  #fraevaerApp .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:20px; }
+  #fraevaerApp .card h2 { font-size:1.05rem; margin-bottom:14px; font-weight:700; }
+  #fraevaerApp .stat .label { color:var(--muted); font-size:.78rem; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+  #fraevaerApp .stat .value { font-size:1.9rem; font-weight:700; margin-top:4px; }
+  #fraevaerApp .stat .sub { color:var(--muted); font-size:.85rem; }
+  #fraevaerApp .bar { height:6px; background:var(--border); border-radius:999px; margin-top:10px; overflow:hidden; }
+  #fraevaerApp .bar > div { height:100%; background:var(--primary); border-radius:999px; }
+  #fraevaerApp .field { margin-bottom:14px; }
+  #fraevaerApp .field label { display:block; font-size:.85rem; font-weight:600; margin-bottom:5px; }
+  #fraevaerApp input, #fraevaerApp select, #fraevaerApp textarea { width:100%; padding:9px 11px; border:1px solid var(--border); border-radius:8px; font:inherit; background:#fff; color:var(--text); margin:0; }
+  #fraevaerApp textarea { resize:vertical; min-height:70px; }
+  #fraevaerApp input[type=checkbox] { width:auto; }
+  #fraevaerApp .row2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  #fraevaerApp .check { display:flex; align-items:center; gap:8px; font-size:.9rem; }
+  #fraevaerApp .check label { margin:0; }
+  #fraevaerApp .hint { color:var(--muted); font-size:.8rem; margin-top:4px; }
+  #fraevaerApp .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:9px 16px; border-radius:8px; border:1px solid var(--border); background:var(--surface); font:inherit; font-weight:600; cursor:pointer; color:var(--text); text-transform:none; letter-spacing:0; line-height:1.3; }
+  #fraevaerApp .btn:hover { background:var(--bg); }
+  #fraevaerApp .btn-primary { background:var(--primary); border-color:var(--primary); color:#fff; }
+  #fraevaerApp .btn-primary:hover { background:var(--primary-dark); }
+  #fraevaerApp .btn-sm { padding:5px 10px; font-size:.82rem; }
+  #fraevaerApp .btn-success { background:var(--success-soft); color:var(--success); border-color:transparent; }
+  #fraevaerApp .btn-danger { background:var(--danger-soft); color:var(--danger); border-color:transparent; }
+  #fraevaerApp .btn-link { background:none; border:0; color:var(--primary); padding:0; font-weight:500; }
+  #fraevaerApp .btn-block { width:100%; }
+  #fraevaerApp .btn[disabled] { opacity:.6; cursor:wait; }
+  #fraevaerApp table { width:100%; border-collapse:collapse; font-size:.9rem; }
+  #fraevaerApp th { text-align:left; color:var(--muted); font-size:.76rem; text-transform:uppercase; letter-spacing:.04em; padding:8px 10px; border-bottom:1px solid var(--border); }
+  #fraevaerApp td { padding:10px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  #fraevaerApp tr:last-child td { border-bottom:0; }
+  #fraevaerApp .table-wrap { overflow-x:auto; }
+  #fraevaerApp .chip { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:999px; font-size:.78rem; font-weight:600; white-space:nowrap; }
+  #fraevaerApp .chip::before { content:""; width:8px; height:8px; border-radius:50%; background:currentColor; }
+  #fraevaerApp .status { padding:3px 10px; border-radius:999px; font-size:.78rem; font-weight:600; white-space:nowrap; }
+  #fraevaerApp .status.venter { background:var(--warning-soft); color:var(--warning); }
+  #fraevaerApp .status.godkjent { background:var(--success-soft); color:var(--success); }
+  #fraevaerApp .status.avslatt { background:var(--danger-soft); color:var(--danger); }
+  #fraevaerApp .empty { color:var(--muted); text-align:center; padding:30px 10px; font-size:.92rem; }
+  #fraevaerApp .filters { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; align-items:center; }
+  #fraevaerApp .filters select, #fraevaerApp .filters input { width:auto; padding:7px 10px; }
+  #fraevaerApp .cal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  #fraevaerApp .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  #fraevaerApp .cal-dow { text-align:center; font-size:.75rem; color:var(--muted); font-weight:600; padding:4px 0; }
+  #fraevaerApp .cal-day { min-height:76px; border:1px solid var(--border); border-radius:8px; padding:5px; font-size:.78rem; background:#fff; }
+  #fraevaerApp .cal-day.other { opacity:.35; }
+  #fraevaerApp .cal-day.today { border-color:var(--primary); box-shadow:inset 0 0 0 1px var(--primary); }
+  #fraevaerApp .cal-day.weekend { background:#fafbfc; }
+  #fraevaerApp .cal-day.holiday { background:#fdf2f1; }
+  #fraevaerApp .cal-day .hol { display:block; font-size:.62rem; line-height:1.25; color:var(--sykemelding); font-weight:600; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #fraevaerApp .cal-day .d { font-weight:600; color:var(--muted); margin-bottom:3px; }
+  #fraevaerApp .cal-ev { display:block; padding:1px 5px; border-radius:4px; color:#fff; font-size:.7rem; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #fraevaerApp .cal-ev.venter { opacity:.55; }
+  #fraevaerApp .legend { display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; font-size:.8rem; color:var(--muted); }
+  #fraevaerApp .legend span::before { content:""; display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; background:var(--c); }
+  #fraevaerApp .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--text); color:#fff; padding:10px 18px; border-radius:8px; font-size:.9rem; opacity:0; pointer-events:none; transition:.25s; z-index:9999; }
+  #fraevaerApp .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  #fraevaerApp .emp-list { list-style:none; padding:0; margin:0 0 14px; }
+  #fraevaerApp .emp-list li { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); font-size:.9rem; }
+  #fraevaerApp .emp-list small { color:var(--muted); }
+  #fraevaerApp .actions { display:flex; gap:6px; flex-wrap:wrap; }
+  #fraevaerApp .notice { background:var(--warning-soft); color:#7a4d00; border-radius:8px; padding:10px 14px; font-size:.85rem; margin-bottom:16px; }
+  #fraevaerApp .error { background:var(--danger-soft); color:var(--danger); border-radius:8px; padding:10px 14px; font-size:.85rem; margin-bottom:14px; }
+  #fraevaerApp .ok { background:var(--success-soft); color:var(--success); border-radius:8px; padding:10px 14px; font-size:.85rem; margin-bottom:14px; }
+  #fraevaerApp .auth { max-width:420px; margin:30px auto; }
+  #fraevaerApp .auth h2 { font-size:1.3rem; margin-bottom:4px; }
+  #fraevaerApp .auth .sub { color:var(--muted); font-size:.9rem; margin-bottom:18px; }
+  #fraevaerApp .auth-switch { text-align:center; font-size:.88rem; color:var(--muted); margin-top:14px; }
+  #fraevaerApp .loading { text-align:center; padding:60px; color:var(--muted); }
+
+  /* ---------- App-skall (frittstående PWA) ---------- */
+  #fraevaerApp { max-width:1180px; padding:0 16px 24px; }
+  #fraevaerApp .fr-header {
+    position:sticky; top:0; z-index:40; background:var(--bg);
+    padding:calc(12px + env(safe-area-inset-top)) 0 12px; margin-bottom:14px;
+    border-bottom:1px solid var(--border); gap:10px;
+  }
+  #fraevaerApp .fr-header h1 { font-size:1.15rem; display:flex; align-items:baseline; gap:8px; }
+  #fraevaerApp .fr-header h1 span { display:inline; font-size:.85rem; }
+  #fraevaerApp .fr-tab .ico { display:none; }
+  #fraevaerApp .fr-tab .ico svg { width:22px; height:22px; display:block; }
+
+  @media (max-width:760px) {
+    #fraevaerApp { padding-bottom:96px; font-size:16px; }
+    #fraevaerApp .fr-grid { grid-template-columns:1fr 1fr; gap:10px; }
+    #fraevaerApp .card { padding:16px; }
+    #fraevaerApp .stat .value { font-size:1.6rem; }
+    #fraevaerApp .stat .label { font-size:.7rem; }
+    #fraevaerApp .stat .sub { font-size:.76rem; }
+    #fraevaerApp .fr-header h1 span { display:none; }
+    #fraevaerApp .fr-user { font-size:.85rem; gap:8px; }
+    #fraevaerApp .fr-user #roleBadge { display:none; }
+    #fraevaerApp .fr-user #userName { max-width:42vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    /* Fanene blir bunnmeny */
+    #fraevaerApp .fr-tabs {
+      position:fixed; left:0; right:0; bottom:0; z-index:60;
+      display:flex; justify-content:space-around; gap:0; overflow:visible;
+      background:var(--surface); border-top:1px solid var(--border); border-bottom:0;
+      margin:0; padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+      box-shadow:0 -2px 14px rgba(16,24,40,.07);
+    }
+    #fraevaerApp .fr-tab {
+      flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+      padding:7px 2px 5px; font-size:.66rem; font-weight:600; border-bottom:0;
+      margin-bottom:0; border-radius:10px; position:relative;
+    }
+    #fraevaerApp .fr-tab .ico { display:block; }
+    #fraevaerApp .fr-tab.active { color:var(--primary); background:var(--primary-soft); }
+    #fraevaerApp .fr-tab .badge {
+      position:absolute; top:2px; right:calc(50% - 20px); margin-left:0;
+      min-width:16px; font-size:.62rem; line-height:16px;
+    }
+    #fraevaerApp .toast { bottom:calc(84px + env(safe-area-inset-bottom)); }
+    #fraevaerApp .auth { margin:16px auto; }
+  }
+
+  /* Installasjonsbanner */
+  #fraevaerApp .installtip {
+    background:var(--primary-soft); color:var(--primary-dark); border-radius:10px;
+    padding:12px 14px; font-size:.85rem; margin-bottom:14px; display:flex;
+    align-items:center; justify-content:space-between; gap:12px;
+  }
+  #fraevaerApp .installtip button { flex-shrink:0; }
+</style>
+
+<!-- ============ LASTER ============ -->
+<div id="viewLoading" class="loading">Laster …</div>
+
+<!-- ============ INNLOGGING ============ -->
+<div id="viewAuth" hidden>
+  <div class="card auth">
+    <div id="authLogin">
+      <h2>Logg inn</h2>
+      <p class="sub">Fraværsregistrering for ansatte</p>
+      <div class="error" id="loginError" hidden></div>
+      <form id="loginForm">
+        <div class="field"><label>E-post</label><input type="email" id="loginEmail" required autocomplete="email"></div>
+        <div class="field"><label>Passord</label><input type="password" id="loginPass" required autocomplete="current-password"></div>
+        <button class="btn btn-primary btn-block" type="submit">Logg inn</button>
+      </form>
+      <div class="auth-switch">
+        <button class="btn btn-link" data-auth="reset">Glemt passord?</button> &nbsp;·&nbsp;
+        <button class="btn btn-link" data-auth="register">Ny bruker? Registrer deg</button>
+      </div>
+    </div>
+
+    <div id="authRegister" hidden>
+      <h2>Registrer bruker</h2>
+      <p class="sub">Du må være lagt til av administrator med denne e-postadressen.</p>
+      <div class="error" id="regError" hidden></div>
+      <div class="ok" id="regOk" hidden></div>
+      <form id="regForm">
+        <div class="field"><label>Fullt navn</label><input id="regName" required autocomplete="name"></div>
+        <div class="field"><label>E-post (jobb)</label><input type="email" id="regEmail" required autocomplete="email"></div>
+        <div class="field"><label>Passord (minst 8 tegn)</label><input type="password" id="regPass" required minlength="8" autocomplete="new-password"></div>
+        <button class="btn btn-primary btn-block" type="submit">Opprett bruker</button>
+      </form>
+      <div class="auth-switch"><button class="btn btn-link" data-auth="login">Tilbake til innlogging</button></div>
+    </div>
+
+    <div id="authReset" hidden>
+      <h2>Tilbakestill passord</h2>
+      <p class="sub">Vi sender deg en lenke på e-post.</p>
+      <div class="error" id="resetError" hidden></div>
+      <div class="ok" id="resetOk" hidden></div>
+      <form id="resetForm">
+        <div class="field"><label>E-post</label><input type="email" id="resetEmail" required></div>
+        <button class="btn btn-primary btn-block" type="submit">Send lenke</button>
+      </form>
+      <div class="auth-switch"><button class="btn btn-link" data-auth="login">Tilbake til innlogging</button></div>
+    </div>
+
+    <div id="authNewPass" hidden>
+      <h2>Velg nytt passord</h2>
+      <p class="sub">&nbsp;</p>
+      <div class="error" id="newPassError" hidden></div>
+      <form id="newPassForm">
+        <div class="field"><label>Nytt passord (minst 8 tegn)</label><input type="password" id="newPass" required minlength="8" autocomplete="new-password"></div>
+        <button class="btn btn-primary btn-block" type="submit">Lagre passord</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="viewApp" hidden>
+  <div class="fr-header">
+    <h1>Fravær <span>Fritidsgården</span></h1>
+    <div class="fr-user">
+      <span id="userName"></span>
+      <span class="fr-role" id="roleBadge">Ansatt</span>
+      <button class="btn btn-sm" id="installBtn" hidden>Installer</button>
+      <button class="btn btn-sm" id="logoutBtn">Logg ut</button>
+    </div>
+  </div>
+
+  <div class="fr-tabs">
+    <button class="fr-tab active" data-tab="oversikt"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg></span><span class="lbl">Oversikt</span></button>
+    <button class="fr-tab" data-tab="kalender"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><span class="lbl">Kalender</span></button>
+    <button class="fr-tab" data-tab="godkjenning" id="tabGodkjenning" hidden><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><span class="lbl">Godkjenn</span><span class="badge" id="pendingBadge" hidden>0</span></button>
+    <button class="fr-tab" data-tab="rapport" id="tabRapport" hidden><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span class="lbl">Rapport</span></button>
+    <button class="fr-tab" data-tab="admin" id="tabAdmin" hidden><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M17 11.5a2.6 2.6 0 1 0 0-5.2"/><path d="M18 20c0-2.3-.9-4-2.3-5"/></svg></span><span class="lbl">Ansatte</span></button>
+    <button class="fr-tab" data-tab="profil"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c0-3.7 3.4-6 7.5-6s7.5 2.3 7.5 6"/></svg></span><span class="lbl">Profil</span></button>
+  </div>
+
+  <section class="fr-panel active" id="panel-oversikt">
+    <div class="fr-grid">
+      <div class="card stat"><div class="label">Feriedager igjen</div><div class="value" id="statFerieIgjen">–</div><div class="sub" id="statFerieSub"></div><div class="bar"><div id="statFerieBar" style="width:0%"></div></div></div>
+      <div class="card stat"><div class="label">Egenmelding brukt</div><div class="value" id="statEgen">–</div><div class="sub" id="statEgenSub">siste 12 mnd</div></div>
+      <div class="card stat"><div class="label">Sykemeldt i år</div><div class="value" id="statSyk">–</div><div class="sub">virkedager</div></div>
+      <div class="card stat"><div class="label">Venter på godkjenning</div><div class="value" id="statVenter">–</div><div class="sub">søknader</div></div>
+    </div>
+    <div class="fr-two">
+      <div class="card">
+        <h2>Registrer fravær</h2>
+        <form id="absenceForm">
+          <div class="field"><label>Type fravær</label>
+            <select id="fType" required>
+              <option value="ferie">Ferie</option><option value="egenmelding">Egenmelding</option>
+              <option value="sykemelding">Sykemelding (fra lege)</option><option value="permisjon">Permisjon</option>
+              <option value="avspasering">Avspasering</option><option value="hjemmekontor">Hjemmekontor</option><option value="annet">Annet</option>
+            </select></div>
+          <div class="row2">
+            <div class="field"><label>Fra dato</label><input type="date" id="fFrom" required></div>
+            <div class="field"><label>Til dato</label><input type="date" id="fTo" required></div>
+          </div>
+          <div class="field check"><input type="checkbox" id="fHalf"><label for="fHalf">Halv dag</label></div>
+          <div class="field" id="fPctWrap" hidden><label>Sykemeldingsgrad (%)</label><input type="number" id="fPct" min="10" max="100" step="10" value="100"></div>
+          <div class="field"><label>Kommentar (valgfritt)</label><textarea id="fComment" placeholder="F.eks. reise, avtale, merknad til leder"></textarea></div>
+          <div class="hint" id="fDays">Velg datoer for å se antall virkedager.</div><br>
+          <button class="btn btn-primary btn-block" type="submit" id="absenceSubmit">Send søknad</button>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Mine registreringer</h2>
+        <div class="filters">
+          <select id="myFilterYear"></select>
+          <select id="myFilterStatus"><option value="">Alle statuser</option><option value="venter">Venter</option><option value="godkjent">Godkjent</option><option value="avslatt">Avslått</option></select>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Type</th><th>Periode</th><th>Dager</th><th>Status</th><th></th></tr></thead><tbody id="myList"></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="fr-panel" id="panel-kalender">
+    <div class="card">
+      <div class="cal-head"><button class="btn btn-sm" id="calPrev">‹ Forrige</button><strong id="calTitle"></strong><button class="btn btn-sm" id="calNext">Neste ›</button></div>
+      <div class="filters">
+        <select id="calEmp"><option value="">Alle ansatte</option></select>
+        <label class="check"><input type="checkbox" id="calShowPending" checked> Vis ubehandlede</label>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="legend">
+        <span style="--c:var(--ferie)">Ferie</span><span style="--c:var(--egenmelding)">Egenmelding</span><span style="--c:var(--sykemelding)">Sykemelding</span>
+        <span style="--c:var(--permisjon)">Permisjon</span><span style="--c:var(--avspasering)">Avspasering</span><span style="--c:var(--hjemmekontor)">Hjemmekontor</span>
+        <span style="--c:var(--annet)">Annet</span><span style="color:var(--muted)">Blek farge = venter på godkjenning</span><span style="color:var(--muted)">Rosa dag = helligdag</span>
+      </div>
+      <p class="hint" style="margin-top:10px">Kollegers sykefravær vises kun for administrator.</p>
+    </div>
+  </section>
+
+  <section class="fr-panel" id="panel-godkjenning">
+    <div class="card"><h2>Søknader til behandling</h2>
+      <div class="table-wrap"><table><thead><tr><th>Ansatt</th><th>Type</th><th>Periode</th><th>Dager</th><th>Kommentar</th><th>Sendt</th><th></th></tr></thead><tbody id="pendingList"></tbody></table></div></div>
+    <br>
+    <div class="card"><h2>Behandlede søknader</h2>
+      <div class="table-wrap"><table><thead><tr><th>Ansatt</th><th>Type</th><th>Periode</th><th>Dager</th><th>Status</th><th>Behandlet av</th><th></th></tr></thead><tbody id="handledList"></tbody></table></div></div>
+  </section>
+
+  <section class="fr-panel" id="panel-rapport">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <h2 style="margin:0">Oversikt per ansatt</h2>
+        <div class="filters" style="margin:0"><select id="repYear"></select><button class="btn btn-sm" id="exportCsv">Eksporter CSV</button></div>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>Ansatt</th><th>Ferie brukt</th><th>Ferie igjen</th><th>Egenmelding</th><th>Sykemelding</th><th>Permisjon</th><th>Avspasering</th><th>Venter</th></tr></thead><tbody id="reportList"></tbody></table></div>
+    </div>
+  </section>
+
+  <section class="fr-panel" id="panel-admin">
+    <div class="fr-two">
+      <div>
+        <div class="card">
+          <h2>Inviter ansatt</h2>
+          <p class="hint" style="margin-bottom:12px">Legg inn e-postadressen. Den ansatte registrerer seg selv med samme e-post via «Registrer deg» på innloggingssiden.</p>
+          <form id="inviteForm">
+            <div class="field"><label>E-post</label><input type="email" id="iEmail" required placeholder="ola@firma.no"></div>
+            <div class="field"><label>Avdeling</label><input id="iDept" placeholder="Salg"></div>
+            <div class="row2">
+              <div class="field"><label>Feriedager per år</label><input id="iQuota" type="number" min="0" max="60" value="25"></div>
+              <div class="field"><label>Rolle</label><select id="iRole"><option value="ansatt">Ansatt</option><option value="admin">Administrator</option></select></div>
+            </div>
+            <button class="btn btn-primary btn-block" type="submit">Legg til</button>
+          </form>
+        </div>
+        <br>
+        <div class="card"><h2>Venter på registrering</h2><ul class="emp-list" id="inviteList"></ul></div>
+        <br>
+        <div class="card">
+          <h2>Innstillinger</h2>
+          <label class="check"><input type="checkbox" id="setIa"> Vi har IA-avtale</label>
+          <p class="hint">Uten IA-avtale: inntil 3 kalenderdager egenmelding per tilfelle, 4 tilfeller per 12 måneder. Med IA-avtale: inntil 8 dager per tilfelle, 24 dager per 12 måneder.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Registrerte ansatte</h2>
+        <ul class="emp-list" id="empList"></ul>
+        <button class="btn btn-sm" id="exportJson">Last ned sikkerhetskopi (JSON)</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="fr-panel" id="panel-profil">
+    <div class="card" style="max-width:480px">
+      <h2>Min profil</h2>
+      <div class="ok" id="profOk" hidden></div>
+      <form id="profileForm">
+        <div class="field"><label>Navn</label><input id="pName" required></div>
+        <div class="field"><label>Avdeling</label><input id="pDept"></div>
+        <div class="field"><label>E-post</label><input id="pEmail" disabled></div>
+        <div class="field"><label>Nytt passord (la stå tomt for å beholde)</label><input type="password" id="pPass" minlength="8" autocomplete="new-password"></div>
+        <button class="btn btn-primary" type="submit">Lagre</button>
+      </form>
+    </div>
+    <br>
+    <div class="card" style="max-width:760px">
+      <h2>Kalender-abonnement (Outlook, Google, Apple)</h2>
+      <p class="hint" style="margin-bottom:12px" id="icalIntro"></p>
+      <ul class="emp-list" id="icalList"><li class="empty">Laster …</li></ul>
+      <details style="font-size:.85rem;color:var(--muted)">
+        <summary style="cursor:pointer;font-weight:600">Slik legger du til i Outlook</summary>
+        <p style="margin:8px 0 4px"><strong>Outlook (Windows/Mac):</strong> Kalender → <em>Legg til kalender</em> → <em>Abonner fra nettet</em> → lim inn lenken → gi kalenderen navn og velg farge → Importer.</p>
+        <p style="margin:4px 0"><strong>Outlook på nett / Microsoft 365:</strong> Kalender → <em>Legg til kalender</em> → <em>Abonner fra nettet</em> → lim inn lenken, velg farge → Importer.</p>
+        <p style="margin:4px 0">Abonner på én lenke per fraværstype og gi hver sin farge – da blir kalenderen fargekodet. Outlook oppdaterer abonnementer omtrent hver 1–3 time.</p>
+      </details>
+      <div class="actions" style="margin-top:12px"><button class="btn btn-sm btn-danger" id="icalRotate">Lag nye lenker (gamle slutter å virke)</button></div>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+</div>
+
+<script src="./supabase.js"></script>
+<script>
+// Service worker registreres først, så app-skallet virker selv om noe annet feiler
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+}
+</script>
+<script>
+(function () {
+  'use strict';
+
+  // ======================================================
+  //  KONFIGURASJON – fyll inn fra Supabase:
+  //  Project Settings -> API -> Project URL og anon public key
+  // ======================================================
+  const SUPABASE_URL = 'https://afhxwjytvdkovhtmxvnv.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_xEEDQCKADSkmitSx0ljjLA_gXkSAbOE';
+
+  const TYPES = {
+    ferie:{label:'Ferie',color:'var(--ferie)',approval:true}, egenmelding:{label:'Egenmelding',color:'var(--egenmelding)',approval:false},
+    sykemelding:{label:'Sykemelding',color:'var(--sykemelding)',approval:false}, permisjon:{label:'Permisjon',color:'var(--permisjon)',approval:true},
+    avspasering:{label:'Avspasering',color:'var(--avspasering)',approval:true}, hjemmekontor:{label:'Hjemmekontor',color:'var(--hjemmekontor)',approval:false},
+    annet:{label:'Annet',color:'var(--annet)',approval:true}
+  };
+  const MONTHS = ['januar','februar','mars','april','mai','juni','juli','august','september','oktober','november','desember'];
+
+  const root = document.getElementById('fraevaerApp');
+  // Squarespace Fluid Engine: løft appen ut av rutenettet så den får full bredde og naturlig høyde
+  const $ = (s) => root.querySelector(s);
+  const $$ = (s) => root.querySelectorAll(s);
+
+  if (SUPABASE_URL.includes('DITT-PROSJEKT')) {
+    $('#viewLoading').innerHTML = '<div class="error">Supabase er ikke konfigurert. Fyll inn SUPABASE_URL og SUPABASE_ANON_KEY i koden.</div>';
+    return;
+  }
+  if (typeof supabase === 'undefined') {
+    $('#viewLoading').innerHTML =
+      '<div class="error">Får ikke lastet appen. Sjekk at du har nett, og prøv å åpne på nytt.</div>' +
+      '<button class="btn" onclick="location.reload()">Prøv igjen</button>';
+    return;
+  }
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ---------- State ----------
+  let session = null, me = null, profiles = [], absences = [], invites = [], iaBedrift = false;
+  let calDate = new Date(); calDate.setDate(1);
+
+  // ---------- Hjelpere ----------
+  const fmt = (iso) => { const [y,m,d] = iso.split('-'); return `${d}.${m}.${y}`; };
+  const toISO = (d) => { const x = new Date(d.getTime() - d.getTimezoneOffset()*60000); return x.toISOString().slice(0,10); };
+  const todayISO = toISO(new Date());
+  const isAdmin = () => me && me.role === 'admin';
+  const empName = (id) => { const e = profiles.find(x => x.id === id); return e ? e.name : 'Ukjent'; };
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  // ---------- Norske helligdager ----------
+  function easterSunday(y) {
+    const a=y%19, b=Math.floor(y/100), c=y%100, d=Math.floor(b/4), e=b%4,
+      f=Math.floor((b+8)/25), g=Math.floor((b-f+1)/3), h=(19*a+b-d-g+15)%30,
+      i=Math.floor(c/4), k=c%4, l=(32+2*e+2*i-h-k)%7, m=Math.floor((a+11*h+22*l)/451),
+      mo=Math.floor((h+l-7*m+114)/31), da=((h+l-7*m+114)%31)+1;
+    return new Date(y, mo-1, da);
+  }
+  const _holCache = {};
+  function holidays(year) {
+    if (_holCache[year]) return _holCache[year];
+    const map = {};
+    [[0,1,'Nyttårsdag'],[4,1,'Arbeidernes dag'],[4,17,'Grunnlovsdagen'],[11,25,'1. juledag'],[11,26,'2. juledag']]
+      .forEach(([mo,da,navn]) => { map[toISO(new Date(year,mo,da))] = navn; });
+    const e = easterSunday(year);
+    [[-3,'Skjærtorsdag'],[-2,'Langfredag'],[0,'1. påskedag'],[1,'2. påskedag'],[39,'Kristi himmelfartsdag'],[49,'1. pinsedag'],[50,'2. pinsedag']]
+      .forEach(([off,navn]) => { const d = new Date(e.getFullYear(), e.getMonth(), e.getDate()+off); map[toISO(d)] = navn; });
+    _holCache[year] = map; return map;
+  }
+  const holidayName = (iso) => holidays(+iso.slice(0,4))[iso] || null;
+
+  function workdays(from, to, half) {
+    if (!from || !to || to < from) return 0;
+    let n = 0; const d = new Date(from+'T00:00:00'), end = new Date(to+'T00:00:00');
+    while (d <= end) { const w = d.getDay();
+      if (w !== 0 && w !== 6 && !holidayName(toISO(d))) n++;
+      d.setDate(d.getDate()+1); }
+    return half ? n*0.5 : n;
+  }
+  // Egenmelding telles i kalenderdager, ikke virkedager
+  const calDays = (from, to) => (!from || !to || to < from) ? 0
+    : Math.round((new Date(to+'T00:00:00') - new Date(from+'T00:00:00')) / 864e5) + 1;
+  const egenRegler = () => iaBedrift
+    ? { perTilfelle: 8, maksDager: 24, navn: 'IA-bedrift' }
+    : { perTilfelle: 3, maksTilfeller: 4, navn: 'uten IA-avtale' };
+  function daysInYear(a, year) {
+    const from = a.from_date < `${year}-01-01` ? `${year}-01-01` : a.from_date;
+    const to = a.to_date > `${year}-12-31` ? `${year}-12-31` : a.to_date;
+    return workdays(from, to, a.half);
+  }
+  function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2800); }
+  function chip(type) { const t = TYPES[type] || TYPES.annet; return `<span class="chip" style="color:${t.color};background:color-mix(in srgb,${t.color} 12%,#fff)">${t.label}</span>`; }
+  function statusHtml(s) { return `<span class="status ${s}">${{venter:'Venter',godkjent:'Godkjent',avslatt:'Avslått'}[s]||s}</span>`; }
+  function period(a) { return fmt(a.from_date) + (a.to_date !== a.from_date ? ' – ' + fmt(a.to_date) : ''); }
+  function showErr(id, msg) { const el = $(id); el.textContent = msg; el.hidden = !msg; }
+  function translateAuthError(e) {
+    const m = (e && e.message) || '';
+    if (/Invalid login credentials/i.test(m)) return 'Feil e-post eller passord.';
+    if (/Email not confirmed/i.test(m)) return 'E-posten er ikke bekreftet. Sjekk innboksen din.';
+    if (/already registered|already exists/i.test(m)) return 'Det finnes allerede en bruker med denne e-posten.';
+    if (/Database error saving new user|NOT_INVITED/i.test(m)) return 'E-postadressen er ikke lagt til av administrator. Be admin legge deg til først.';
+    if (/Password should be/i.test(m)) return 'Passordet er for svakt (minst 8 tegn).';
+    if (/rate limit/i.test(m)) return 'For mange forsøk. Vent litt og prøv igjen.';
+    return m || 'Noe gikk galt.';
+  }
+
+  // ---------- Visninger ----------
+  function show(view) {
+    ['#viewLoading','#viewAuth','#viewApp'].forEach(v => $(v).hidden = v !== view);
+  }
+  function showAuth(part) {
+    show('#viewAuth');
+    ['#authLogin','#authRegister','#authReset','#authNewPass'].forEach(v => $(v).hidden = v !== part);
+  }
+  function switchTab(name) {
+    $$('.fr-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    $$('.fr-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
+  }
+
+  // ---------- Data ----------
+  async function loadAll() {
+    const [p, a, i, st] = await Promise.all([
+      sb.from('profiles').select('*').order('name'),
+      sb.from('absences').select('*').order('from_date', { ascending: false }),
+      isAdmin() ? sb.from('invites').select('*').order('created_at') : Promise.resolve({ data: [] }),
+      sb.from('settings').select('*')
+    ]);
+    iaBedrift = (st.data || []).find(x => x.key === 'ia_bedrift')?.value === true;
+    if (p.error) toast('Kunne ikke hente ansatte: ' + p.error.message);
+    if (a.error) toast('Kunne ikke hente fravær: ' + a.error.message);
+    profiles = p.data || []; absences = a.data || []; invites = i.data || [];
+    me = profiles.find(x => x.id === session.user.id) || me;
+    renderAll();
+  }
+  async function refresh() { await loadAll(); }
+
+  async function init() {
+    const { data } = await sb.auth.getSession();
+    session = data.session;
+    sb.auth.onAuthStateChange(async (event, s) => {
+      session = s;
+      if (event === 'PASSWORD_RECOVERY') { showAuth('#authNewPass'); return; }
+      if (event === 'SIGNED_OUT') { me = null; showAuth('#authLogin'); return; }
+      if (event === 'SIGNED_IN' && !me) enter();
+    });
+    if (session) enter(); else showAuth('#authLogin');
+  }
+  async function enter() {
+    show('#viewLoading');
+    const { data: prof } = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
+    if (!prof) {
+      $('#viewLoading').innerHTML = '<div class="error">Kontoen din er ikke aktiv. Kontakt administrator.</div><button class="btn" id="tmpLogout">Logg ut</button>';
+      $('#tmpLogout').onclick = () => sb.auth.signOut();
+      return;
+    }
+    me = prof;
+    await loadAll();
+    show('#viewApp');
+    switchTab('oversikt');
+    renderIcal(false);
+  }
+
+  // ---------- Render ----------
+  function renderAll() {
+    $('#userName').textContent = me.name;
+    $('#roleBadge').textContent = isAdmin() ? 'Administrator' : 'Ansatt';
+    $('#tabGodkjenning').hidden = $('#tabRapport').hidden = $('#tabAdmin').hidden = !isAdmin();
+    const pend = absences.filter(a => a.status === 'venter').length;
+    $('#pendingBadge').hidden = pend === 0; $('#pendingBadge').textContent = pend;
+
+    const years = new Set([new Date().getFullYear()]);
+    absences.forEach(a => { years.add(+a.from_date.slice(0,4)); years.add(+a.to_date.slice(0,4)); });
+    const ylist = [...years].sort((a,b) => b-a);
+    ['#myFilterYear','#repYear'].forEach(id => { const s = $(id); const cur = s.value || String(new Date().getFullYear());
+      s.innerHTML = ylist.map(y => `<option value="${y}" ${String(y)===cur?'selected':''}>${y}</option>`).join(''); });
+    const ce = $('#calEmp'); const cur = ce.value;
+    ce.innerHTML = '<option value="">Alle ansatte</option>' + profiles.map(e => `<option value="${e.id}" ${e.id===cur?'selected':''}>${esc(e.name)}</option>`).join('');
+
+    $('#pName').value = me.name; $('#pDept').value = me.dept || ''; $('#pEmail').value = me.email;
+
+    renderStats(); renderMyList(); renderCalendar();
+    if (isAdmin()) { renderPending(); renderReport(); renderEmployees(); }
+  }
+
+  async function renderIcal(rotate) {
+    const list = $('#icalList');
+    const { data: tok, error } = await sb.rpc(rotate ? 'rotate_ical_token' : 'my_ical_token');
+    if (error || !tok) { list.innerHTML = '<li class="empty">Kalender-abonnement er ikke satt opp ennå (' + (error ? esc(error.message) : 'ingen nøkkel') + ').</li>'; return; }
+    const base = SUPABASE_URL + '/functions/v1/ical?token=' + tok;
+    const items = [{ label: isAdmin() ? 'Alt fravær (alle ansatte)' : 'Mitt fravær', url: base, color: '#1c2430' }];
+    if (isAdmin()) Object.entries(TYPES).forEach(([k, t]) => items.push({ label: t.label + ' (alle ansatte)', url: base + '&type=' + k, color: t.color }));
+    $('#icalIntro').textContent = isAdmin()
+      ? 'Som administrator får du alle ansattes fravær. Lenkene er personlige og hemmelige – ikke del dem.'
+      : 'Lenken gir deg ditt eget fravær i din kalender. Den er personlig og hemmelig – ikke del den.';
+    list.innerHTML = items.map(i => `
+      <li><div style="min-width:0"><strong style="color:${i.color}">${esc(i.label)}</strong><br><small style="word-break:break-all">${esc(i.url)}</small></div>
+      <button class="btn btn-sm" data-copy="${esc(i.url)}">Kopier</button></li>`).join('');
+  }
+  root.addEventListener('click', async e => {
+    const b = e.target.closest('[data-copy]'); if (!b) return;
+    try { await navigator.clipboard.writeText(b.dataset.copy); toast('Lenke kopiert.'); }
+    catch (_) { prompt('Kopier lenken:', b.dataset.copy); }
+  });
+  $('#setIa').addEventListener('change', async e => {
+    const v = e.target.checked;
+    const { error } = await sb.from('settings').upsert({ key: 'ia_bedrift', value: v, updated_at: new Date().toISOString() });
+    if (error) { e.target.checked = !v; return toast('Feil: ' + error.message); }
+    iaBedrift = v; toast(v ? 'Lagret: IA-bedrift.' : 'Lagret: uten IA-avtale.'); renderStats(); updateDayHint();
+  });
+  $('#icalRotate').addEventListener('click', () => { if (confirm('Lage nye lenker? Kalendere som bruker de gamle lenkene slutter å oppdatere seg.')) renderIcal(true); });
+
+  function renderStats() {
+    const year = new Date().getFullYear();
+    const mine = absences.filter(a => a.employee_id === me.id);
+    const ferie = mine.filter(a => a.type === 'ferie' && a.status !== 'avslatt').reduce((s,a) => s + daysInYear(a, year), 0);
+    const carry = me.carryover || 0, tilgjengelig = me.quota + carry;
+    $('#statFerieIgjen').textContent = Math.max(0, tilgjengelig - ferie);
+    $('#statFerieSub').textContent = `${ferie} av ${me.quota}${carry ? ` + ${carry} overført` : ''} brukt/planlagt i ${year}`;
+    $('#statFerieBar').style.width = Math.min(100, ferie/(tilgjengelig||1)*100) + '%';
+
+    const e = egenMine(me.id), r = egenRegler();
+    if (r.maksDager) { $('#statEgen').textContent = e.dager; $('#statEgenSub').textContent = `av ${r.maksDager} kalenderdager siste 12 mnd (${r.navn})`; }
+    else { $('#statEgen').textContent = e.tilfeller; $('#statEgenSub').textContent = `av ${r.maksTilfeller} tilfeller siste 12 mnd (${r.navn})`; }
+
+    $('#statSyk').textContent = mine.filter(a => a.type === 'sykemelding').reduce((s,a) => s + daysInYear(a, year), 0);
+    $('#statVenter').textContent = mine.filter(a => a.status === 'venter').length;
+  }
+  // Egenmelding siste 12 mnd for én ansatt
+  function egenMine(id) {
+    const back = new Date(); back.setFullYear(back.getFullYear()-1);
+    const rows = absences.filter(a => a.employee_id === id && a.type === 'egenmelding' && a.status !== 'avslatt' && a.from_date >= toISO(back));
+    return { tilfeller: rows.length, dager: rows.reduce((s,a) => s + calDays(a.from_date, a.to_date), 0) };
+  }
+
+  function renderMyList() {
+    const year = $('#myFilterYear').value, st = $('#myFilterStatus').value;
+    const rows = absences.filter(a => a.employee_id === me.id)
+      .filter(a => !year || a.from_date.slice(0,4) === year || a.to_date.slice(0,4) === year)
+      .filter(a => !st || a.status === st);
+    $('#myList').innerHTML = rows.length ? rows.map(a => `
+      <tr><td>${chip(a.type)}${a.pct && a.pct < 100 ? ` <small style="color:var(--muted)">${a.pct}%</small>` : ''}</td>
+      <td>${period(a)}${a.comment ? `<div class="hint">${esc(a.comment)}</div>` : ''}</td>
+      <td>${workdays(a.from_date,a.to_date,a.half)}</td>
+      <td>${statusHtml(a.status)}${a.reply ? `<div class="hint">${esc(a.reply)}</div>` : ''}</td>
+      <td>${a.status === 'venter' || a.from_date >= todayISO ? `<button class="btn btn-sm" data-del="${a.id}">Trekk</button>` : ''}</td></tr>`).join('')
+      : '<tr><td colspan="5" class="empty">Ingen registreringer.</td></tr>';
+  }
+
+  function renderCalendar() {
+    const y = calDate.getFullYear(), m = calDate.getMonth();
+    $('#calTitle').textContent = `${MONTHS[m][0].toUpperCase()+MONTHS[m].slice(1)} ${y}`;
+    const filterEmp = $('#calEmp').value, showPending = $('#calShowPending').checked;
+    const startDow = (new Date(y,m,1).getDay()+6)%7; const start = new Date(y,m,1-startDow);
+    let html = ['Man','Tir','Ons','Tor','Fre','Lør','Søn'].map(d => `<div class="cal-dow">${d}</div>`).join('');
+    for (let i = 0; i < 42; i++) {
+      const d = new Date(start); d.setDate(start.getDate()+i);
+      if (i >= 35 && d.getMonth() !== m) break;
+      const iso = toISO(d); const other = d.getMonth() !== m; const wk = d.getDay()===0||d.getDay()===6;
+      const hol = holidayName(iso);
+      const evs = absences.filter(a => a.from_date <= iso && a.to_date >= iso && a.status !== 'avslatt' && (showPending || a.status !== 'venter') && (!filterEmp || a.employee_id === filterEmp));
+      html += `<div class="cal-day ${other?'other':''} ${wk?'weekend':''} ${hol?'holiday':''} ${iso===todayISO?'today':''}"><div class="d">${d.getDate()}</div>` +
+        (hol ? `<span class="hol" title="${esc(hol)}">${esc(hol)}</span>` : '') +
+        evs.map(a => `<span class="cal-ev ${a.status}" style="background:${TYPES[a.type].color}" title="${esc(empName(a.employee_id))} – ${TYPES[a.type].label}">${esc(empName(a.employee_id).split(' ')[0])}</span>`).join('') + '</div>';
+    }
+    $('#calGrid').innerHTML = html;
+  }
+
+  function renderPending() {
+    const pend = absences.filter(a => a.status === 'venter').sort((a,b) => a.from_date.localeCompare(b.from_date));
+    $('#pendingList').innerHTML = pend.length ? pend.map(a => `
+      <tr><td><strong>${esc(empName(a.employee_id))}</strong></td><td>${chip(a.type)}</td><td>${period(a)}</td><td>${workdays(a.from_date,a.to_date,a.half)}</td>
+      <td>${esc(a.comment) || '<span style="color:var(--muted)">–</span>'}</td><td>${fmt(a.created_at.slice(0,10))}</td>
+      <td class="actions"><button class="btn btn-sm btn-success" data-approve="${a.id}">Godkjenn</button><button class="btn btn-sm btn-danger" data-reject="${a.id}">Avslå</button></td></tr>`).join('')
+      : '<tr><td colspan="7" class="empty">Ingen søknader venter.</td></tr>';
+    const handled = absences.filter(a => a.status !== 'venter').slice(0, 60);
+    $('#handledList').innerHTML = handled.length ? handled.map(a => `
+      <tr><td>${esc(empName(a.employee_id))}</td><td>${chip(a.type)}</td><td>${period(a)}</td><td>${workdays(a.from_date,a.to_date,a.half)}</td>
+      <td>${statusHtml(a.status)}</td><td>${esc(a.handled_by || 'Automatisk')}</td><td><button class="btn btn-sm" data-del="${a.id}">Slett</button></td></tr>`).join('')
+      : '<tr><td colspan="7" class="empty">Ingen behandlede søknader.</td></tr>';
+  }
+
+  function reportRows() {
+    const year = +$('#repYear').value || new Date().getFullYear();
+    return profiles.map(e => {
+      const mine = absences.filter(a => a.employee_id === e.id && a.status !== 'avslatt');
+      const sum = (t) => mine.filter(a => a.type === t && a.status === 'godkjent').reduce((s,a) => s + daysInYear(a, year), 0);
+      const ferie = mine.filter(a => a.type === 'ferie').reduce((s,a) => s + daysInYear(a, year), 0);
+      return { name:e.name, dept:e.dept, ferie, igjen:Math.max(0, e.quota + (e.carryover||0) - ferie), egen:sum('egenmelding'), syk:sum('sykemelding'), perm:sum('permisjon'), avsp:sum('avspasering'), venter:mine.filter(a=>a.status==='venter').length };
+    });
+  }
+  function renderReport() {
+    $('#reportList').innerHTML = reportRows().map(r => `<tr><td><strong>${esc(r.name)}</strong><br><small style="color:var(--muted)">${esc(r.dept)}</small></td>
+      <td>${r.ferie}</td><td>${r.igjen}</td><td>${r.egen}</td><td>${r.syk}</td><td>${r.perm}</td><td>${r.avsp}</td><td>${r.venter}</td></tr>`).join('') || '<tr><td colspan="8" class="empty">Ingen ansatte.</td></tr>';
+  }
+
+  function renderEmployees() {
+    $('#setIa').checked = iaBedrift;
+    $('#empList').innerHTML = profiles.map(e => `
+      <li><div><strong>${esc(e.name)}</strong> <span class="fr-role">${e.role==='admin'?'Admin':'Ansatt'}</span><br><small>${esc(e.email)} ${e.dept?'· '+esc(e.dept):''} · ${e.quota} feriedager${e.carryover?` + ${e.carryover} overført`:''}</small></div>
+      <div class="actions"><button class="btn btn-sm" data-editemp="${e.id}">Endre</button>${e.id!==me.id?`<button class="btn btn-sm btn-danger" data-delemp="${e.id}">Fjern</button>`:''}</div></li>`).join('') || '<li class="empty">Ingen ansatte.</li>';
+    $('#inviteList').innerHTML = invites.map(i => `
+      <li><div>${esc(i.email)}<br><small>${i.role==='admin'?'Admin':'Ansatt'} ${i.dept?'· '+esc(i.dept):''} · ${i.quota} feriedager</small></div>
+      <button class="btn btn-sm" data-delinv="${esc(i.email)}">Fjern</button></li>`).join('') || '<li class="empty">Ingen ventende invitasjoner.</li>';
+  }
+
+  // ---------- Auth-hendelser ----------
+  root.addEventListener('click', e => { const b = e.target.closest('[data-auth]'); if (b) showAuth('#auth' + b.dataset.auth[0].toUpperCase() + b.dataset.auth.slice(1)); });
+
+  $('#loginForm').addEventListener('submit', async e => {
+    e.preventDefault(); showErr('#loginError', '');
+    const btn = e.target.querySelector('button'); btn.disabled = true;
+    const { error } = await sb.auth.signInWithPassword({ email: $('#loginEmail').value.trim(), password: $('#loginPass').value });
+    btn.disabled = false;
+    if (error) showErr('#loginError', translateAuthError(error));
+  });
+
+  $('#regForm').addEventListener('submit', async e => {
+    e.preventDefault(); showErr('#regError', ''); $('#regOk').hidden = true;
+    const btn = e.target.querySelector('button'); btn.disabled = true;
+    const { data, error } = await sb.auth.signUp({
+      email: $('#regEmail').value.trim(), password: $('#regPass').value,
+      options: { data: { name: $('#regName').value.trim() }, emailRedirectTo: location.href.split('#')[0] }
+    });
+    btn.disabled = false;
+    if (error) return showErr('#regError', translateAuthError(error));
+    if (data.session) return; // innlogget direkte (e-postbekreftelse skrudd av)
+    $('#regOk').textContent = 'Bruker opprettet! Sjekk e-posten din og klikk på bekreftelseslenken, og logg deretter inn.'; $('#regOk').hidden = false;
+    e.target.reset();
+  });
+
+  $('#resetForm').addEventListener('submit', async e => {
+    e.preventDefault(); showErr('#resetError', ''); $('#resetOk').hidden = true;
+    const { error } = await sb.auth.resetPasswordForEmail($('#resetEmail').value.trim(), { redirectTo: location.href.split('#')[0] });
+    if (error) return showErr('#resetError', translateAuthError(error));
+    $('#resetOk').textContent = 'Hvis e-posten finnes, er det sendt en lenke for å tilbakestille passordet.'; $('#resetOk').hidden = false;
+  });
+
+  $('#newPassForm').addEventListener('submit', async e => {
+    e.preventDefault(); showErr('#newPassError', '');
+    const { error } = await sb.auth.updateUser({ password: $('#newPass').value });
+    if (error) return showErr('#newPassError', translateAuthError(error));
+    toast('Passord oppdatert.'); enter();
+  });
+
+  $('#logoutBtn').addEventListener('click', () => sb.auth.signOut());
+
+  // ---------- App-hendelser ----------
+  $$('.fr-tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+  $('#myFilterYear').addEventListener('change', renderMyList);
+  $('#myFilterStatus').addEventListener('change', renderMyList);
+  $('#repYear').addEventListener('change', renderReport);
+  $('#calEmp').addEventListener('change', renderCalendar);
+  $('#calShowPending').addEventListener('change', renderCalendar);
+  $('#calPrev').addEventListener('click', () => { calDate.setMonth(calDate.getMonth()-1); renderCalendar(); });
+  $('#calNext').addEventListener('click', () => { calDate.setMonth(calDate.getMonth()+1); renderCalendar(); });
+  $('#fType').addEventListener('change', e => { $('#fPctWrap').hidden = e.target.value !== 'sykemelding'; });
+  function updateDayHint() { const n = workdays($('#fFrom').value, $('#fTo').value, $('#fHalf').checked);
+    const t = $('#fType').value;
+    if (!n) { $('#fDays').textContent = 'Velg datoer for å se antall virkedager.'; return; }
+    let txt = `${n} virkedag${n===1?'':'er'} (helger og helligdager telles ikke).`;
+    if (t === 'egenmelding') { const k = calDays($('#fFrom').value, $('#fTo').value), r = egenRegler();
+      txt += ` Egenmelding: ${k} kalenderdag${k===1?'':'er'} av maks ${r.perTilfelle} per tilfelle.`; }
+    $('#fDays').textContent = txt; }
+  ['#fTo','#fHalf','#fType'].forEach(id => $(id).addEventListener('change', updateDayHint));
+  $('#fFrom').addEventListener('change', () => { if (!$('#fTo').value || $('#fTo').value < $('#fFrom').value) $('#fTo').value = $('#fFrom').value; updateDayHint(); });
+
+  $('#absenceForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const type = $('#fType').value, from = $('#fFrom').value, to = $('#fTo').value;
+    if (to < from) return toast('Til-dato kan ikke være før fra-dato.');
+    if (type === 'egenmelding') {
+      const r = egenRegler(), k = calDays(from, to);
+      if (k > r.perTilfelle) return toast(`Egenmelding kan brukes i inntil ${r.perTilfelle} kalenderdager per tilfelle (${r.navn}). Ved lengre fravær må du bruke sykemelding.`);
+      const brukt = egenMine(me.id);
+      if (r.maksDager && brukt.dager + k > r.maksDager && !confirm(`Dette overskrider ${r.maksDager} egenmeldingsdager siste 12 måneder. Registrere likevel?`)) return;
+      if (r.maksTilfeller && brukt.tilfeller >= r.maksTilfeller && !confirm(`Du har allerede brukt ${brukt.tilfeller} av ${r.maksTilfeller} egenmeldinger siste 12 måneder. Registrere likevel?`)) return;
+    }
+    if (type === 'ferie') {
+      const brukt = absences.filter(a => a.employee_id === me.id && a.type === 'ferie' && a.status !== 'avslatt').reduce((s,a) => s + daysInYear(a, new Date().getFullYear()), 0);
+      const igjen = (me.quota + (me.carryover||0)) - brukt;
+      if (workdays(from, to, $('#fHalf').checked) > igjen && !confirm(`Du har ${igjen} feriedager igjen i år. Registrere likevel?`)) return;
+    }
+    if (absences.some(a => a.employee_id === me.id && a.status !== 'avslatt' && a.from_date <= to && a.to_date >= from) && !confirm('Du har allerede fravær i denne perioden. Registrere likevel?')) return;
+    const needsApproval = TYPES[type].approval;
+    $('#absenceSubmit').disabled = true;
+    const { error } = await sb.from('absences').insert({
+      employee_id: me.id, type, from_date: from, to_date: to, half: $('#fHalf').checked,
+      pct: type === 'sykemelding' ? +$('#fPct').value : null, comment: $('#fComment').value.trim(),
+      status: needsApproval ? 'venter' : 'godkjent', handled_by: needsApproval ? null : 'Automatisk'
+    });
+    $('#absenceSubmit').disabled = false;
+    if (error) return toast('Feil: ' + error.message);
+    e.target.reset(); $('#fPctWrap').hidden = true; updateDayHint();
+    toast(needsApproval ? 'Søknad sendt til godkjenning.' : 'Fravær registrert.');
+    refresh();
+  });
+
+  root.addEventListener('click', async e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.del) {
+      if (!confirm('Fjerne denne registreringen?')) return;
+      const { error } = await sb.from('absences').delete().eq('id', b.dataset.del);
+      if (error) return toast('Feil: ' + error.message);
+      toast('Fjernet.'); refresh();
+    }
+    if (b.dataset.approve || b.dataset.reject) {
+      const id = b.dataset.approve || b.dataset.reject; let reply = '';
+      if (b.dataset.reject) { const r = prompt('Begrunnelse for avslag (valgfritt):'); if (r === null) return; reply = r.trim(); }
+      const { error } = await sb.from('absences').update({ status: b.dataset.approve ? 'godkjent' : 'avslatt', reply, handled_by: me.name, handled_at: new Date().toISOString() }).eq('id', id);
+      if (error) return toast('Feil: ' + error.message);
+      toast(b.dataset.approve ? 'Godkjent.' : 'Avslått.'); refresh();
+    }
+    if (b.dataset.editemp) {
+      const p = profiles.find(x => x.id === b.dataset.editemp); if (!p) return;
+      const quota = prompt(`Feriedager per år for ${p.name}:`, p.quota); if (quota === null) return;
+      const carry = prompt(`Feriedager overført fra i fjor (ferieloven tillater inntil 12):`, p.carryover || 0); if (carry === null) return;
+      const dept = prompt('Avdeling:', p.dept || ''); if (dept === null) return;
+      const role = p.id === me.id ? p.role : (confirm('Skal ' + p.name + ' være administrator?\n\nOK = Administrator, Avbryt = Ansatt') ? 'admin' : 'ansatt');
+      const { error } = await sb.from('profiles').update({ quota: +quota || 0, carryover: +carry || 0, dept: dept.trim(), role }).eq('id', p.id);
+      if (error) return toast('Feil: ' + error.message);
+      toast('Oppdatert.'); refresh();
+    }
+    if (b.dataset.delemp) {
+      if (!confirm('Fjerne ansatt og alle registreringer? Brukeren mister tilgang.')) return;
+      const { error } = await sb.from('profiles').delete().eq('id', b.dataset.delemp);
+      if (error) return toast('Feil: ' + error.message);
+      toast('Fjernet.'); refresh();
+    }
+    if (b.dataset.delinv) {
+      const { error } = await sb.from('invites').delete().eq('email', b.dataset.delinv);
+      if (error) return toast('Feil: ' + error.message);
+      refresh();
+    }
+  });
+
+  $('#inviteForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = $('#iEmail').value.trim().toLowerCase();
+    if (profiles.some(p => p.email.toLowerCase() === email)) return toast('Denne e-posten er allerede registrert.');
+    const { error } = await sb.from('invites').upsert({ email, dept: $('#iDept').value.trim(), quota: +$('#iQuota').value || 25, role: $('#iRole').value });
+    if (error) return toast('Feil: ' + error.message);
+    e.target.reset(); $('#iQuota').value = 25;
+    toast('Lagt til. Den ansatte kan nå registrere seg med ' + email + '.'); refresh();
+  });
+
+  $('#profileForm').addEventListener('submit', async e => {
+    e.preventDefault(); $('#profOk').hidden = true;
+    const { error } = await sb.from('profiles').update({ name: $('#pName').value.trim(), dept: $('#pDept').value.trim() }).eq('id', me.id);
+    if (error) return toast('Feil: ' + error.message);
+    if ($('#pPass').value) { const r = await sb.auth.updateUser({ password: $('#pPass').value }); if (r.error) return toast(translateAuthError(r.error)); $('#pPass').value = ''; }
+    $('#profOk').textContent = 'Profilen er lagret.'; $('#profOk').hidden = false; refresh();
+  });
+
+  $('#exportCsv').addEventListener('click', () => {
+    const rows = [['Ansatt','Avdeling','Ferie brukt','Ferie igjen','Egenmelding','Sykemelding','Permisjon','Avspasering','Venter'],
+      ...reportRows().map(r => [r.name,r.dept,r.ferie,r.igjen,r.egen,r.syk,r.perm,r.avsp,r.venter])];
+    download('fravaersrapport-' + $('#repYear').value + '.csv', '﻿' + rows.map(r => r.map(v => `"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\n'), 'text/csv');
+  });
+  $('#exportJson').addEventListener('click', () => download('fravaer-backup.json', JSON.stringify({ profiles, absences }, null, 2), 'application/json'));
+  function download(name, content, type) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([content], {type})); a.download = name; a.click(); URL.revokeObjectURL(a.href); }
+
+  // ---------- App-installasjon ----------
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault(); deferredPrompt = e; $('#installBtn').hidden = false;
+  });
+  $('#installBtn').addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null; $('#installBtn').hidden = true;
+  });
+  window.addEventListener('appinstalled', () => { $('#installBtn').hidden = true; });
+
+  // iOS: vis kort veiledning siden Safari ikke har installasjonsknapp
+  (function iosTips() {
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const standalone = window.navigator.standalone === true ||
+      window.matchMedia('(display-mode: standalone)').matches;
+    if (!ios || standalone || localStorage.getItem('fr_ios_tip') === 'skjult') return;
+    const el = document.createElement('div');
+    el.className = 'installtip';
+    el.innerHTML = '<span>Legg appen på hjemskjermen: trykk <strong>Del</strong> nederst, og velg <strong>«Legg til på Hjem-skjerm»</strong>.</span>' +
+                   '<button class="btn btn-sm" type="button">Skjul</button>';
+    el.querySelector('button').onclick = () => { localStorage.setItem('fr_ios_tip','skjult'); el.remove(); };
+    root.insertBefore(el, root.firstChild);
+  })();
+
+  init();
+})();
+</script>
+
+</body>
+</html>
