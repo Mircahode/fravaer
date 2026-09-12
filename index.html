@@ -696,7 +696,7 @@ if ('serviceWorker' in navigator) {
     $('#setIa').checked = iaBedrift;
     $('#empList').innerHTML = profiles.map(e => `
       <li><div><strong>${esc(e.name)}</strong> <span class="fr-role">${e.role==='admin'?'Admin':'Ansatt'}</span><br><small>${esc(e.email)} ${e.dept?'· '+esc(e.dept):''} · ${e.quota} feriedager${e.carryover?` + ${e.carryover} overført`:''}</small></div>
-      <div class="actions"><button class="btn btn-sm" data-editemp="${e.id}">Endre</button>${e.id!==me.id?`<button class="btn btn-sm btn-danger" data-delemp="${e.id}">Fjern</button>`:''}</div></li>`).join('') || '<li class="empty">Ingen ansatte.</li>';
+      <div class="actions"><button class="btn btn-sm" data-editemp="${e.id}">Endre</button>${e.id!==me.id?`<button class="btn btn-sm" data-roleemp="${e.id}">${e.role==='admin'?'Gjør til ansatt':'Gjør til admin'}</button><button class="btn btn-sm btn-danger" data-delemp="${e.id}">Fjern</button>`:''}</div></li>`).join('') || '<li class="empty">Ingen ansatte.</li>';
     $('#inviteList').innerHTML = invites.map(i => `
       <li><div>${esc(i.email)}<br><small>${i.role==='admin'?'Admin':'Ansatt'} ${i.dept?'· '+esc(i.dept):''} · ${i.quota} feriedager</small></div>
       <button class="btn btn-sm" data-delinv="${esc(i.email)}">Fjern</button></li>`).join('') || '<li class="empty">Ingen ventende invitasjoner.</li>';
@@ -814,10 +814,20 @@ if ('serviceWorker' in navigator) {
       const quota = prompt(`Feriedager per år for ${p.name}:`, p.quota); if (quota === null) return;
       const carry = prompt(`Feriedager overført fra i fjor (ferieloven tillater inntil 12):`, p.carryover || 0); if (carry === null) return;
       const dept = prompt('Avdeling:', p.dept || ''); if (dept === null) return;
-      const role = p.id === me.id ? p.role : (confirm('Skal ' + p.name + ' være administrator?\n\nOK = Administrator, Avbryt = Ansatt') ? 'admin' : 'ansatt');
-      const { error } = await sb.from('profiles').update({ quota: +quota || 0, carryover: +carry || 0, dept: dept.trim(), role }).eq('id', p.id);
+      const { error } = await sb.from('profiles').update({ quota: +quota || 0, carryover: +carry || 0, dept: dept.trim() }).eq('id', p.id);
       if (error) return toast('Feil: ' + error.message);
       toast('Oppdatert.'); refresh();
+    }
+    if (b.dataset.roleemp) {
+      const p = profiles.find(x => x.id === b.dataset.roleemp); if (!p) return;
+      const ny = p.role === 'admin' ? 'ansatt' : 'admin';
+      if (ny === 'ansatt' && profiles.filter(x => x.role === 'admin').length < 2) return toast('Det må være minst én administrator.');
+      if (!confirm(ny === 'admin'
+        ? `Gjøre ${p.name} til administrator?\n\nDa ser ${p.name} alle ansattes fravær – også sykefravær – og kan godkjenne søknader og endre ansatte.`
+        : `Gjøre ${p.name} til vanlig ansatt?\n\nDa mister ${p.name} tilgang til godkjenning, rapporter og administrasjon.`)) return;
+      const { error } = await sb.from('profiles').update({ role: ny }).eq('id', p.id);
+      if (error) return toast('Feil: ' + error.message);
+      toast(`${p.name} er nå ${ny === 'admin' ? 'administrator' : 'vanlig ansatt'}.`); refresh();
     }
     if (b.dataset.delemp) {
       if (!confirm('Fjerne ansatt og alle registreringer? Brukeren mister tilgang.')) return;
