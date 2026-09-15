@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Fravær – Fritidsgården</title>
 <meta name="description" content="Registrer ferie, egenmelding, sykemelding, permisjon og avspasering.">
-<meta name="theme-color" content="#f4f6f9">
+<meta name="theme-color" content="#10151c">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
@@ -16,23 +16,35 @@
 <meta name="robots" content="noindex, nofollow">
 <style>
   html { -webkit-text-size-adjust:100%; }
-  body { margin:0; background:#f4f6f9; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; background:#10151c; -webkit-tap-highlight-color:transparent; }
+  html[data-fr-theme="light"] body { background:#f4f6f9; }
 </style>
 </head>
 <body>
 <div id="fraevaerApp">
 <style>
   #fraevaerApp {
-    --bg: #f4f6f9; --surface: #fff; --border: #e2e6ec; --text: #1c2430; --muted: #6b7684;
-    --primary: #2f6bff; --primary-dark: #2456d1; --primary-soft: #e8efff;
-    --danger: #d64545; --danger-soft: #fdeaea; --success: #1f9d5a; --success-soft: #e4f6ec;
-    --warning: #d98a0b; --warning-soft: #fff4de; --radius: 12px;
-    --shadow: 0 1px 2px rgba(16,24,40,.05), 0 4px 16px rgba(16,24,40,.06);
-    --ferie:#2f6bff; --egenmelding:#d98a0b; --sykemelding:#d64545; --permisjon:#8b5cf6;
-    --avspasering:#0ea5a5; --hjemmekontor:#64748b; --annet:#94a3b8;
+    --bg: #10151c; --surface: #19202a; --raised: #212a36; --field: #121821;
+    --border: #2c3644; --text: #e9eef6; --muted: #98a6ba;
+    --primary: #4d8dff; --primary-dark: #9dc0ff; --primary-soft: rgba(77,141,255,.18);
+    --danger: #ff6b6b; --danger-soft: rgba(255,107,107,.16); --success: #3ddc97; --success-soft: rgba(61,220,151,.16);
+    --warning: #f5b544; --warning-soft: rgba(245,181,68,.16); --warning-text: #f5b544; --radius: 14px;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px rgba(0,0,0,.3);
+    --ferie:#4d8dff; --egenmelding:#f5b544; --sykemelding:#ff6b6b; --permisjon:#b18cff;
+    --avspasering:#2dd4bf; --hjemmekontor:#8fa3bd; --annet:#7e8ca0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
     color: var(--text); line-height: 1.5; font-size: 15px; max-width: 1180px; margin: 0 auto; padding: 8px 0 48px;
     text-align: left;
+  }
+  #fraevaerApp[data-theme="light"] {
+    --bg: #f4f6f9; --surface: #fff; --raised: #f7f9fc; --field: #fff;
+    --border: #e2e6ec; --text: #1c2430; --muted: #6b7684;
+    --primary: #2f6bff; --primary-dark: #2456d1; --primary-soft: #e8efff;
+    --danger: #d64545; --danger-soft: #fdeaea; --success: #1f9d5a; --success-soft: #e4f6ec;
+    --warning: #d98a0b; --warning-soft: #fff4de; --warning-text: #7a4d00;
+    --shadow: 0 1px 2px rgba(16,24,40,.05), 0 4px 16px rgba(16,24,40,.06);
+    --ferie:#2f6bff; --egenmelding:#d98a0b; --sykemelding:#d64545; --permisjon:#8b5cf6;
+    --avspasering:#0ea5a5; --hjemmekontor:#64748b; --annet:#94a3b8;
   }
   #fraevaerApp * { box-sizing: border-box; }
   #fraevaerApp h1, #fraevaerApp h2, #fraevaerApp h3, #fraevaerApp p { margin: 0; letter-spacing: 0; text-transform: none; }
@@ -53,14 +65,17 @@
   @media (max-width:520px){ #fraevaerApp .fr-grid{grid-template-columns:1fr} }
   #fraevaerApp .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:20px; }
   #fraevaerApp .card h2 { font-size:1.05rem; margin-bottom:14px; font-weight:700; }
+  #fraevaerApp .stat { position:relative; overflow:hidden; border-color:color-mix(in srgb, var(--c) 30%, var(--border)); }
+  #fraevaerApp .stat::before { content:""; position:absolute; inset:0 auto 0 0; width:3px; background:var(--c); }
+  #fraevaerApp .stat::after { content:""; position:absolute; top:-40px; right:-40px; width:120px; height:120px; border-radius:50%; background:var(--c); opacity:.10; pointer-events:none; }
   #fraevaerApp .stat .label { color:var(--muted); font-size:.78rem; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
-  #fraevaerApp .stat .value { font-size:1.9rem; font-weight:700; margin-top:4px; }
+  #fraevaerApp .stat .value { font-size:1.9rem; font-weight:700; margin-top:4px; color:var(--c); }
   #fraevaerApp .stat .sub { color:var(--muted); font-size:.85rem; }
   #fraevaerApp .bar { height:6px; background:var(--border); border-radius:999px; margin-top:10px; overflow:hidden; }
-  #fraevaerApp .bar > div { height:100%; background:var(--primary); border-radius:999px; }
+  #fraevaerApp .bar > div { height:100%; background:var(--c, var(--primary)); border-radius:999px; }
   #fraevaerApp .field { margin-bottom:14px; }
   #fraevaerApp .field label { display:block; font-size:.85rem; font-weight:600; margin-bottom:5px; }
-  #fraevaerApp input, #fraevaerApp select, #fraevaerApp textarea { width:100%; padding:9px 11px; border:1px solid var(--border); border-radius:8px; font:inherit; background:#fff; color:var(--text); margin:0; }
+  #fraevaerApp input, #fraevaerApp select, #fraevaerApp textarea { width:100%; padding:9px 11px; border:1px solid var(--border); border-radius:8px; font:inherit; background:var(--field); color:var(--text); margin:0; }
   #fraevaerApp textarea { resize:vertical; min-height:70px; }
   #fraevaerApp input[type=checkbox] { width:auto; }
   #fraevaerApp .row2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
@@ -94,24 +109,28 @@
   #fraevaerApp .cal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
   #fraevaerApp .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
   #fraevaerApp .cal-dow { text-align:center; font-size:.75rem; color:var(--muted); font-weight:600; padding:4px 0; }
-  #fraevaerApp .cal-day { min-height:76px; border:1px solid var(--border); border-radius:8px; padding:5px; font-size:.78rem; background:#fff; }
+  #fraevaerApp .cal-day { min-height:76px; border:1px solid var(--border); border-radius:10px; padding:5px; font-size:.78rem; background:var(--raised); }
   #fraevaerApp .cal-day.other { opacity:.35; }
   #fraevaerApp .cal-day.today { border-color:var(--primary); box-shadow:inset 0 0 0 1px var(--primary); }
-  #fraevaerApp .cal-day.weekend { background:#fafbfc; }
-  #fraevaerApp .cal-day.holiday { background:#fdf2f1; }
+  #fraevaerApp .cal-day.weekend { background:color-mix(in srgb, var(--muted) 8%, var(--raised)); }
+  #fraevaerApp .cal-day.holiday { background:color-mix(in srgb, var(--sykemelding) 14%, var(--raised)); }
   #fraevaerApp .cal-day .hol { display:block; font-size:.62rem; line-height:1.25; color:var(--sykemelding); font-weight:600; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   #fraevaerApp .cal-day .d { font-weight:600; color:var(--muted); margin-bottom:3px; }
   #fraevaerApp .cal-ev { display:block; padding:1px 5px; border-radius:4px; color:#fff; font-size:.7rem; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   #fraevaerApp .cal-ev.venter { opacity:.55; }
   #fraevaerApp .legend { display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; font-size:.8rem; color:var(--muted); }
   #fraevaerApp .legend span::before { content:""; display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:-1px; background:var(--c); }
-  #fraevaerApp .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--text); color:#fff; padding:10px 18px; border-radius:8px; font-size:.9rem; opacity:0; pointer-events:none; transition:.25s; z-index:9999; }
+  #fraevaerApp .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--raised); border:1px solid var(--border); color:var(--text); padding:10px 18px; border-radius:8px; font-size:.9rem; opacity:0; pointer-events:none; transition:.25s; z-index:9999; }
   #fraevaerApp .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  #fraevaerApp .modal { position:fixed; inset:0; z-index:200; background:rgba(4,8,14,.66); display:flex; align-items:center; justify-content:center; padding:16px; }
+  #fraevaerApp .modal-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:20px; width:100%; max-width:430px; max-height:88vh; overflow:auto; }
+  #fraevaerApp .modal-card h2 { font-size:1.05rem; font-weight:700; margin-bottom:14px; }
+  #fraevaerApp .modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:18px; }
   #fraevaerApp .emp-list { list-style:none; padding:0; margin:0 0 14px; }
   #fraevaerApp .emp-list li { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); font-size:.9rem; }
   #fraevaerApp .emp-list small { color:var(--muted); }
   #fraevaerApp .actions { display:flex; gap:6px; flex-wrap:wrap; }
-  #fraevaerApp .notice { background:var(--warning-soft); color:#7a4d00; border-radius:8px; padding:10px 14px; font-size:.85rem; margin-bottom:16px; }
+  #fraevaerApp .notice { background:var(--warning-soft); color:var(--warning-text); border-radius:8px; padding:10px 14px; font-size:.85rem; margin-bottom:16px; }
   #fraevaerApp .error { background:var(--danger-soft); color:var(--danger); border-radius:8px; padding:10px 14px; font-size:.85rem; margin-bottom:14px; }
   #fraevaerApp .ok { background:var(--success-soft); color:var(--success); border-radius:8px; padding:10px 14px; font-size:.85rem; margin-bottom:14px; }
   #fraevaerApp .auth { max-width:420px; margin:30px auto; }
@@ -127,7 +146,13 @@
     padding:calc(12px + env(safe-area-inset-top)) 0 12px; margin-bottom:14px;
     border-bottom:1px solid var(--border); gap:10px;
   }
+  #fraevaerApp .fr-header::after {
+    content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px;
+    background:linear-gradient(90deg, var(--ferie), var(--permisjon) 35%, var(--avspasering) 70%, var(--egenmelding));
+    opacity:.85;
+  }
   #fraevaerApp .fr-header h1 { font-size:1.15rem; display:flex; align-items:baseline; gap:8px; }
+  #fraevaerApp .fr-header h1 span { color:var(--primary-dark); }
   #fraevaerApp .fr-header h1 span { display:inline; font-size:.85rem; }
   #fraevaerApp .fr-tab .ico { display:none; }
   #fraevaerApp .fr-tab .ico svg { width:22px; height:22px; display:block; }
@@ -242,6 +267,7 @@
     <div class="fr-user">
       <span id="userName"></span>
       <span class="fr-role" id="roleBadge">Ansatt</span>
+      <button class="btn btn-sm" id="themeBtn" title="Bytt mellom mørkt og lyst">Lyst</button>
       <button class="btn btn-sm" id="installBtn" hidden>Installer</button>
       <button class="btn btn-sm" id="logoutBtn">Logg ut</button>
     </div>
@@ -258,10 +284,10 @@
 
   <section class="fr-panel active" id="panel-oversikt">
     <div class="fr-grid">
-      <div class="card stat"><div class="label">Feriedager igjen</div><div class="value" id="statFerieIgjen">–</div><div class="sub" id="statFerieSub"></div><div class="bar"><div id="statFerieBar" style="width:0%"></div></div></div>
-      <div class="card stat"><div class="label">Egenmelding brukt</div><div class="value" id="statEgen">–</div><div class="sub" id="statEgenSub">siste 12 mnd</div></div>
-      <div class="card stat"><div class="label">Sykemeldt i år</div><div class="value" id="statSyk">–</div><div class="sub">virkedager</div></div>
-      <div class="card stat"><div class="label">Venter på godkjenning</div><div class="value" id="statVenter">–</div><div class="sub">søknader</div></div>
+      <div class="card stat" style="--c:var(--ferie)"><div class="label">Feriedager igjen</div><div class="value" id="statFerieIgjen">–</div><div class="sub" id="statFerieSub"></div><div class="bar"><div id="statFerieBar" style="width:0%"></div></div></div>
+      <div class="card stat" style="--c:var(--egenmelding)"><div class="label">Egenmelding brukt</div><div class="value" id="statEgen">–</div><div class="sub" id="statEgenSub">siste 12 mnd</div></div>
+      <div class="card stat" style="--c:var(--sykemelding)"><div class="label">Sykemeldt i år</div><div class="value" id="statSyk">–</div><div class="sub">virkedager</div></div>
+      <div class="card stat" style="--c:var(--permisjon)"><div class="label">Venter på godkjenning</div><div class="value" id="statVenter">–</div><div class="sub">søknader</div></div>
     </div>
     <div class="fr-two">
       <div class="card">
@@ -390,6 +416,13 @@
     </div>
   </section>
 </div>
+<div class="modal" id="modal" hidden>
+  <div class="modal-card">
+    <h2 id="modalTitle"></h2>
+    <div id="modalBody"></div>
+    <div class="modal-actions"><button class="btn" id="modalCancel">Avbryt</button><button class="btn btn-primary" id="modalSave">Lagre</button></div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 </div>
 
@@ -423,6 +456,20 @@ if ('serviceWorker' in navigator) {
   // Squarespace Fluid Engine: løft appen ut av rutenettet så den får full bredde og naturlig høyde
   const $ = (s) => root.querySelector(s);
   const $$ = (s) => root.querySelectorAll(s);
+
+  // ---------- Tema: mørkt som standard, lyst kan velges ----------
+  const TEMA_KEY = 'fr_tema';
+  function settTema(t) {
+    root.dataset.theme = t;
+    document.documentElement.dataset.frTheme = t;
+    try { localStorage.setItem(TEMA_KEY, t); } catch (_) {}
+    const b = root.querySelector('#themeBtn');
+    if (b) b.textContent = t === 'light' ? 'Mørkt' : 'Lyst';
+    const m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute('content', t === 'light' ? '#f4f6f9' : '#10151c');
+  }
+  let lagretTema = null; try { lagretTema = localStorage.getItem(TEMA_KEY); } catch (_) {}
+  settTema(lagretTema === 'light' ? 'light' : 'dark');
 
   if (SUPABASE_URL.includes('DITT-PROSJEKT')) {
     $('#viewLoading').innerHTML = '<div class="error">Supabase er ikke konfigurert. Fyll inn SUPABASE_URL og SUPABASE_ANON_KEY i koden.</div>';
@@ -485,10 +532,12 @@ if ('serviceWorker' in navigator) {
   function daysInYear(a, year) {
     const from = a.from_date < `${year}-01-01` ? `${year}-01-01` : a.from_date;
     const to = a.to_date > `${year}-12-31` ? `${year}-12-31` : a.to_date;
-    return workdays(from, to, a.half);
+    // Sykemeldingsgrad teller med: 50 % i fem dager er 2,5 dager
+    const grad = (a.type === 'sykemelding' && a.pct) ? a.pct / 100 : 1;
+    return Math.round(workdays(from, to, a.half) * grad * 10) / 10;
   }
   function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2800); }
-  function chip(type) { const t = TYPES[type] || TYPES.annet; return `<span class="chip" style="color:${t.color};background:color-mix(in srgb,${t.color} 12%,#fff)">${t.label}</span>`; }
+  function chip(type) { const t = TYPES[type] || TYPES.annet; return `<span class="chip" style="color:${t.color};background:color-mix(in srgb,${t.color} 20%,transparent)">${t.label}</span>`; }
   function statusHtml(s) { return `<span class="status ${s}">${{venter:'Venter',godkjent:'Godkjent',avslatt:'Avslått'}[s]||s}</span>`; }
   function period(a) { return fmt(a.from_date) + (a.to_date !== a.from_date ? ' – ' + fmt(a.to_date) : ''); }
   function showErr(id, msg) { const el = $(id); el.textContent = msg; el.hidden = !msg; }
@@ -504,7 +553,20 @@ if ('serviceWorker' in navigator) {
   }
 
   // ---------- Visninger ----------
+  // Sier fra hvis vi blir hengende på "Laster ..." fordi nettet svikter
+  let vakt = null;
+  function startVakt() {
+    clearTimeout(vakt);
+    vakt = setTimeout(() => {
+      if ($('#viewLoading').hidden) return;
+      $('#viewLoading').innerHTML =
+        '<div class="error">Fikk ikke kontakt med serveren. Sjekk at du har nett, og prøv igjen.</div>' +
+        '<button class="btn btn-primary" id="retryBtn">Prøv igjen</button>';
+      const r = $('#retryBtn'); if (r) r.onclick = () => location.reload();
+    }, 9000);
+  }
   function show(view) {
+    if (view !== '#viewLoading') clearTimeout(vakt);
     ['#viewLoading','#viewAuth','#viewApp'].forEach(v => $(v).hidden = v !== view);
   }
   function showAuth(part) {
@@ -534,6 +596,7 @@ if ('serviceWorker' in navigator) {
   async function refresh() { await loadAll(); }
 
   async function init() {
+    startVakt();
     const { data } = await sb.auth.getSession();
     session = data.session;
     sb.auth.onAuthStateChange(async (event, s) => {
@@ -545,7 +608,7 @@ if ('serviceWorker' in navigator) {
     if (session) enter(); else showAuth('#authLogin');
   }
   async function enter() {
-    show('#viewLoading');
+    show('#viewLoading'); startVakt();
     const { data: prof } = await sb.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
     if (!prof) {
       $('#viewLoading').innerHTML = '<div class="error">Kontoen din er ikke aktiv. Kontakt administrator.</div><button class="btn" id="tmpLogout">Logg ut</button>';
@@ -742,6 +805,7 @@ if ('serviceWorker' in navigator) {
   });
 
   $('#logoutBtn').addEventListener('click', () => sb.auth.signOut());
+  $('#themeBtn').addEventListener('click', () => settTema(root.dataset.theme === 'light' ? 'dark' : 'light'));
 
   // ---------- App-hendelser ----------
   $$('.fr-tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
@@ -794,6 +858,21 @@ if ('serviceWorker' in navigator) {
     refresh();
   });
 
+  // ---------- Dialog ----------
+  let modalSave = null;
+  function openModal(onSave) { modalSave = onSave; $('#modal').hidden = false; }
+  function closeModal() { $('#modal').hidden = true; modalSave = null; }
+  $('#modalCancel').addEventListener('click', closeModal);
+  $('#modal').addEventListener('click', e => { if (e.target === $('#modal')) closeModal(); });
+  $('#modalSave').addEventListener('click', async () => {
+    if (!modalSave) return closeModal();
+    const btn = $('#modalSave'); btn.disabled = true;
+    const res = await modalSave();
+    btn.disabled = false;
+    if (res !== false) closeModal();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#modal').hidden) closeModal(); });
+
   root.addEventListener('click', async e => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.del) {
@@ -811,12 +890,21 @@ if ('serviceWorker' in navigator) {
     }
     if (b.dataset.editemp) {
       const p = profiles.find(x => x.id === b.dataset.editemp); if (!p) return;
-      const quota = prompt(`Feriedager per år for ${p.name}:`, p.quota); if (quota === null) return;
-      const carry = prompt(`Feriedager overført fra i fjor (ferieloven tillater inntil 12):`, p.carryover || 0); if (carry === null) return;
-      const dept = prompt('Avdeling:', p.dept || ''); if (dept === null) return;
-      const { error } = await sb.from('profiles').update({ quota: +quota || 0, carryover: +carry || 0, dept: dept.trim() }).eq('id', p.id);
-      if (error) return toast('Feil: ' + error.message);
-      toast('Oppdatert.'); refresh();
+      $('#modalTitle').textContent = 'Endre ' + p.name;
+      $('#modalBody').innerHTML = `
+        <div class="row2">
+          <div class="field"><label>Feriedager per år</label><input type="number" id="mQuota" min="0" max="60" value="${p.quota}"></div>
+          <div class="field"><label>Overført fra i fjor</label><input type="number" id="mCarry" min="0" max="12" value="${p.carryover || 0}"></div>
+        </div>
+        <div class="field"><label>Avdeling</label><input id="mDept" value="${esc(p.dept || '')}"></div>
+        <p class="hint">Ferieloven tillater inntil 12 overførte feriedager.</p>`;
+      openModal(async () => {
+        const { error } = await sb.from('profiles').update({
+          quota: +$('#mQuota').value || 0, carryover: +$('#mCarry').value || 0, dept: $('#mDept').value.trim()
+        }).eq('id', p.id);
+        if (error) { toast('Feil: ' + error.message); return false; }
+        toast('Oppdatert.'); refresh();
+      });
     }
     if (b.dataset.roleemp) {
       const p = profiles.find(x => x.id === b.dataset.roleemp); if (!p) return;
